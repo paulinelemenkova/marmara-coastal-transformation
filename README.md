@@ -1,7 +1,6 @@
 # Sea of Marmara coastal transformation — analysis scripts
 
-[![DOI](https://zenodo.org/badge/DOI/PENDING.svg)](https://doi.org/PENDING)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22048481.svg)](https://doi.org/10.5281/zenodo.22048481)
 
 Open, reproducible workflow for mapping **land-cover change, shoreline reclamation and
 mucilage susceptibility in the Sea of Marmara, Türkiye (2015–2025)** from open Landsat
@@ -11,7 +10,7 @@ These scripts reproduce every figure, table and derived layer in the article:
 
 > Lemenkova, P., Zülfikar, A. C.: Land-cover change, shoreline reclamation and mucilage
 > susceptibility in the Sea of Marmara, Türkiye. *Acta geographica Slovenica* (submitted).
-> DOI: *to be added on acceptance*.
+> Code archived at https://doi.org/10.5281/zenodo.22048481
 
 All input data are open access; no proprietary data or software are required.
 
