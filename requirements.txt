@@ -1,0 +1,15 @@
+# Python 3.12. Install with:  python -m pip install -r requirements.txt
+numpy
+scipy
+matplotlib
+rasterio
+pyproj
+Pillow
+scikit-learn
+scikit-image
+requests
+pystac-client
+planetary-computer
+# External (install separately, NOT via pip):
+#   GRASS GIS >= 8.4   (r.learn.ml2 add-on for the Random Forest step)
+#   GMT >= 6           (Generic Mapping Tools, for the overview & shoreline maps)

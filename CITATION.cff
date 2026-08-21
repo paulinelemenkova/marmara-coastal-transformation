@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use these scripts, please cite the article and this archived code."
+title: "Sea of Marmara coastal transformation — analysis scripts"
+abstract: "Open GRASS GIS, Python and GMT workflow for mapping land-cover change, shoreline reclamation and mucilage susceptibility in the Sea of Marmara, Türkiye (2015–2025)."
+authors:
+  - family-names: Lemenkova
+    given-names: Polina
+    affiliation: "Istanbul Technical University"
+    orcid: "https://orcid.org/0000-0002-5759-1141"
+  - family-names: Zülfikar
+    given-names: Abdullah Can
+    affiliation: "Istanbul Technical University"
+license: MIT
+version: "1.0.0"
+date-released: 2026-08-21
+repository-code: "https://github.com/USERNAME/marmara-coastal-transformation"
+keywords:
+  - remote sensing
+  - GRASS GIS
+  - Landsat
+  - land-cover change
+  - shoreline reclamation
+  - mucilage
+  - Sea of Marmara
+  - Türkiye
+preferred-citation:
+  type: article
+  title: "Land-cover change, shoreline reclamation and mucilage susceptibility in the Sea of Marmara, Türkiye"
+  authors:
+    - family-names: Lemenkova
+      given-names: Polina
+    - family-names: Zülfikar
+      given-names: Abdullah Can
+  journal: "Acta geographica Slovenica"
+  year: 2026

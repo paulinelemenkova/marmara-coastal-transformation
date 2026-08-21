@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""
+Two-panel NDVI comparison, Sea of Marmara:
+    (a) 2015  (WRS-2 181/032 + 180/032, Landsat 8)
+    (b) 2025  (WRS-2 181/032 + 180/032, Landsat 8/9)
+Both panels share the GRASS 'ndvi' colour table over NDVI [-1, 1] (absolute,
+so colours are pinned to NDVI values) and a single common colorbar. Both are
+drawn on the same geographic window (union of the two mosaics). Concise title
+fitted so its text spans the width of the two map panels.
+
+Inputs: the two NDVI mosaic GeoTIFFs (100 m is plenty for a 2-panel figure).
+"""
+import os, sys, textwrap
+import numpy as np
+import rasterio
+from rasterio.warp import reproject, Resampling
+import matplotlib as mpl
+mpl.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import figstyle
+
+OUT = "/mnt/user-data/outputs/"
+TIF = {
+    "2015": f"{OUT}ndvi_mosaic_2015_100m.tif",
+    "2025": "/mnt/user-data/uploads/ndvi_mosaic_2025_100m.tif",
+}
+MNDWI = {   # used only to mask water for display (water = MNDWI > 0)
+    "2015": f"{OUT}mndwi_mosaic_2015_100m.tif",
+    "2025": "/mnt/user-data/uploads/mndwi_mosaic_2025_100m.tif",
+}
+VMIN, VMAX = -1.0, 1.0
+CMAP = figstyle.byg_cmap()
+
+
+def _read(path):
+    with rasterio.open(path) as ds:
+        a = ds.read(1).astype("float32")
+        if ds.nodata is not None:
+            a[a == ds.nodata] = np.nan
+        if np.nanmax(np.abs(a)) > 5:      # Int16 stored as value*1e4
+            a = a / 1e4
+        prof = ds.profile
+        T = ds.transform
+        ext = [T.c/1e3, (T.c + ds.width*T.a)/1e3,
+               (T.f + ds.height*T.e)/1e3, T.f/1e3]
+    return a, prof, ext
+
+
+def load_ndvi_water(ndvi_path, mndwi_path):
+    """NDVI with water (MNDWI > 0) forced to -1 so it renders deep blue.
+    Labeled cartographic choice for cross-epoch display consistency."""
+    ndvi, prof, ext = _read(ndvi_path)
+    mnd, mprof, _ = _read(mndwi_path)
+    if mnd.shape != ndvi.shape or mprof["transform"] != prof["transform"]:
+        dst = np.full(ndvi.shape, np.nan, "float32")
+        reproject(mnd, dst, src_transform=mprof["transform"], src_crs=mprof["crs"],
+                  dst_transform=prof["transform"], dst_crs=prof["crs"],
+                  resampling=Resampling.nearest)
+        mnd = dst
+    water = np.isfinite(mnd) & (mnd > 0)
+    ndvi = ndvi.copy()
+    ndvi[water] = -1.0
+    return ndvi, ext
+
+
+A15, e15 = load_ndvi_water(TIF["2015"], MNDWI["2015"])
+A25, e25 = load_ndvi_water(TIF["2025"], MNDWI["2025"])
+
+xL = min(e15[0], e25[0]); xR = max(e15[1], e25[1])
+yB = min(e15[2], e25[2]); yT = max(e15[3], e25[3])
+
+figstyle.apply_style()
+fig, (axa, axb) = plt.subplots(2, 1, figsize=(9.4, 10.2))
+fig.subplots_adjust(left=0.09, right=0.86, bottom=0.10, top=0.90, hspace=0.14)
+
+for ax, arr, ext, tag, yr in [(axa, A15, e15, "a", "2015"),
+                              (axb, A25, e25, "b", "2025")]:
+    im = ax.imshow(np.ma.masked_invalid(arr), extent=ext, origin="upper",
+                   cmap=CMAP, vmin=VMIN, vmax=VMAX, interpolation="nearest")
+    ax.set_xlim(xL, xR); ax.set_ylim(yB, yT)
+    ax.set_aspect("equal")
+    ax.set_ylabel("Northing (km, UTM 35N)")
+    ax.xaxis.set_minor_locator(AutoMinorLocator())
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
+    ax.tick_params(which="major", length=4, labelsize=8)
+    ax.tick_params(which="minor", length=2)
+    ax.grid(which="major", color="0.6", lw=0.3, alpha=0.4)
+    ax.set_title(f"({tag}) {yr}", fontsize=10, fontweight="bold", pad=4)
+
+axb.set_xlabel("Easting (km, UTM 35N)")      # x label on bottom panel only
+axa.tick_params(labelbottom=False)
+
+# shared colorbar spanning both panels on the right
+p_top = axa.get_position(); p_bot = axb.get_position()
+cax = fig.add_axes([0.88, p_bot.y0, 0.016, p_top.y1 - p_bot.y0])
+cb = fig.colorbar(im, cax=cax, extend="neither")
+cb.set_label("NDVI", fontsize=9)
+cb.ax.tick_params(labelsize=8)
+cb.locator = plt.MultipleLocator(0.25); cb.update_ticks()
+
+
+def fitted_title_over_panels(fig, ax_left, ax_right, text, max_pt=15.0, min_pt=8.0):
+    fig.canvas.draw()
+    l = ax_left.get_position().x0; r = ax_right.get_position().x1
+    span_px = (r - l) * fig.get_figwidth() * fig.dpi
+    ytop = max(ax_left.get_position().y1, ax_right.get_position().y1)
+    t = fig.text(0.5*(l+r), ytop + 0.02, text, ha="center", va="bottom",
+                 fontweight="bold", fontsize=max_pt)
+    rend = fig.canvas.get_renderer(); pt = max_pt
+    while pt > min_pt and t.get_window_extent(renderer=rend).width > span_px:
+        pt -= 0.25; t.set_fontsize(pt)
+    return t
+
+
+
+def wrapped_credit_over_panels(fig, ax_left, right_edge, text, pt=8.0):
+    fig.canvas.draw()
+    l = ax_left.get_position().x0
+    r = right_edge if isinstance(right_edge, (int, float)) else right_edge.get_position().x1
+    width_px = (r - l) * fig.get_figwidth() * fig.dpi
+    rend = fig.canvas.get_renderer()
+    probe = fig.text(0, 0, "x", fontsize=pt); cw = probe.get_window_extent(renderer=rend).width
+    probe.remove()
+    ncols = max(40, int(width_px / max(cw, 1e-6)))
+    lines = textwrap.wrap(text, width=ncols)
+    for _ in range(60):
+        tmp = fig.text(0, 0, "\n".join(lines), fontsize=pt)
+        w = tmp.get_window_extent(renderer=rend).width; tmp.remove()
+        if w <= width_px or ncols <= 40:
+            break
+        ncols -= 2; lines = textwrap.wrap(text, width=ncols)
+    return fig.text(l, 0.055, "\n".join(lines), ha="left", va="top",
+                    fontsize=pt, linespacing=1.3)
+
+
+fitted_title_over_panels(fig, axa, axb, "NDVI mosaic - Sea of Marmara 2015-2025")
+wrapped_credit_over_panels(fig, axa, 0.965,
+    "Landsat OLI C2 L2 surface reflectance, WRS-2 181/032 + 180/032, UTM 35N. "
+    "(a) 2015 Landsat 8; (b) 2025 Landsat 8/9. NDVI = (B5-B4)/(B5+B4), east matched "
+    "and feathered. Colour: GRASS 'byg' [-1, 1]; water (MNDWI > 0) = -1 for display. "
+    "USGS/NASA; map: authors.")
+
+for e in ("png", "pdf"):
+    fig.savefig(f"{OUT}fig_ndvi_2panel_2015_2025.{e}",
+                bbox_inches="tight", pad_inches=0.04, dpi=300 if e == "png" else None)
+print("wrote fig_ndvi_2panel_2015_2025.png/.pdf")
