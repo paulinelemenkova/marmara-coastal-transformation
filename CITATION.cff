@@ -9,6 +9,7 @@ authors:
   - family-names: Zülfikar
     given-names: Abdullah Can
     affiliation: "Istanbul Technical University"
+    orcid: "https://orcid.org/0000-0001-6610-3334"
 license: MIT
 version: "1.0.2"
 repository-code: "https://github.com/paulinelemenkova/marmara-coastal-transformation"
