@@ -1,0 +1,23 @@
+# ---- keep the target journal private: never commit journal-named artifacts ----
+*IJEG*
+*ijeg*
+ags_*
+*AGS*
+*[Aa]cta*[Gg]eografica*
+*[Ss]lovenica*
+
+# ---- manuscript & working documents (code repo only) ----
+*.docx
+*.pdf
+~$*
+
+# ---- data & local scratch ----
+data/
+z_add_figures/
+*.tif
+*.img
+
+# ---- python ----
+__pycache__/
+*.pyc
+.venv/

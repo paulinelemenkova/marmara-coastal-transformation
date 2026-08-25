@@ -8,8 +8,8 @@ imagery using **GRASS GIS**, **Python** and **GMT**.
 
 These scripts reproduce every figure, table and derived layer in the article:
 
-> Lemenkova, P., Zülfikar, A. C.: Land-cover change, shoreline reclamation and mucilage
-> susceptibility in the Sea of Marmara, Türkiye. *Acta geographica Slovenica* (submitted).
+> Lemenkova, P., & Zülfikar, A. C. (2026). Land-cover change, shoreline reclamation and
+> mucilage susceptibility in the Sea of Marmara, Türkiye. Manuscript in preparation.
 > Code archived at https://doi.org/10.5281/zenodo.22048481
 
 All input data are open access; no proprietary data or software are required.
